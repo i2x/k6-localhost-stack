@@ -1,0 +1,97 @@
+{
+  "title": "k6 + Host (CPU/RAM) - Local",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 2,
+  "editable": true,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "RPS (http_reqs/s)",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT NON_NEGATIVE_DERIVATIVE(SUM(\"value\"),1s) AS rps FROM \"http_reqs\" WHERE $timeFilter AND \"name\"='POST /api/predict' GROUP BY time($__interval) fill(0)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "p95 http_req_duration (ms)",
+      "id": 2,
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT PERCENTILE(\"value\",95) AS p95 FROM \"http_req_duration\" WHERE $timeFilter AND \"name\"='POST /api/predict' GROUP BY time($__interval) fill(null)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "HTTP errors (rate)",
+      "id": 3,
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT MEAN(\"value\") AS error_rate FROM \"http_req_failed\" WHERE $timeFilter AND \"name\"='POST /api/predict' GROUP BY time($__interval) fill(null)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "CPU total (%)",
+      "id": 4,
+      "gridPos": { "x": 0, "y": 6, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT MEAN(\"usage_active\") AS cpu_total FROM \"cpu\" WHERE $timeFilter AND \"cpu\"='cpu-total' GROUP BY time($__interval) fill(null)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Memory used (%)",
+      "id": 5,
+      "gridPos": { "x": 6, "y": 6, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT MEAN(\"used_percent\") AS mem_used FROM \"mem\" WHERE $timeFilter GROUP BY time($__interval) fill(null)"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Latency (p95/avg)",
+      "id": 6,
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQuery": true,
+          "query": "SELECT PERCENTILE(\"value\",95) AS p95 FROM \"http_req_duration\" WHERE $timeFilter AND \"name\"='POST /api/predict' GROUP BY time($__interval) fill(null)"
+        },
+        {
+          "refId": "B",
+          "rawQuery": true,
+          "query": "SELECT MEAN(\"value\") AS avg FROM \"http_req_duration\" WHERE $timeFilter AND \"name\"='POST /api/predict' GROUP BY time($__interval) fill(null)"
+        }
+      ],
+      "lines": true,
+      "fill": 1,
+      "linewidth": 2
+    }
+  ],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" }
+}
